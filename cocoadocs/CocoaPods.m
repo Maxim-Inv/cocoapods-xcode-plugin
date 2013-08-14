@@ -33,6 +33,7 @@ static NSString *XAR_EXECUTABLE = @"/usr/bin/xar";
 
 @interface CocoaPods ()
 @property (nonatomic, strong) NSMenuItem *installPodsItem;
+@property (nonatomic, strong) NSMenuItem *updatePodsItem;
 @property (nonatomic, strong) NSMenuItem *editPodfileItem;
 @property (nonatomic, strong) NSMenuItem *installDocsItem;
 @property (nonatomic, strong) NSMenuItem *createPodfileItem;
@@ -62,7 +63,7 @@ static NSString *XAR_EXECUTABLE = @"/usr/bin/xar";
 #pragma mark - Menu
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-    if ([menuItem isEqual:self.installPodsItem] || [menuItem isEqual:self.editPodfileItem])
+    if ([menuItem isEqual:self.installPodsItem] || [menuItem isEqual:self.updatePodsItem] || [menuItem isEqual:self.editPodfileItem])
         return [CCPWorkspaceManager currentWorkspaceHasPodfile];
 
     else if ([menuItem isEqual:self.createPodfileItem])
@@ -85,6 +86,9 @@ static NSString *XAR_EXECUTABLE = @"/usr/bin/xar";
         self.installPodsItem = [[NSMenuItem alloc] initWithTitle:@"Install Pods in Podfile"
                                                           action:@selector(integratePods)
                                                    keyEquivalent:@""];
+        self.updatePodsItem = [[NSMenuItem alloc] initWithTitle:@"Update Pods in Podfile"
+                                                          action:@selector(updatePods)
+                                                   keyEquivalent:@""];
         
         self.editPodfileItem = [[NSMenuItem alloc] initWithTitle:@"Edit Podfile"
                                                           action:@selector(openPodfileForEditing)
@@ -100,12 +104,14 @@ static NSString *XAR_EXECUTABLE = @"/usr/bin/xar";
         
         [self.installDocsItem setTarget:self];
         [self.installPodsItem setTarget:self];
+        [self.updatePodsItem setTarget:self];
         [updateCPodsItem setTarget:self];
         [self.editPodfileItem setTarget:self];
         [self.createPodfileItem setTarget:self];
 
         [[cocoaPodsMenu submenu] addItem:self.createPodfileItem];
         [[cocoaPodsMenu submenu] addItem:self.installPodsItem];
+        [[cocoaPodsMenu submenu] addItem:self.updatePodsItem];
         [[cocoaPodsMenu submenu] addItem:self.installDocsItem];
         [[cocoaPodsMenu submenu] addItem:[NSMenuItem separatorItem]];
         [[cocoaPodsMenu submenu] addItem:self.editPodfileItem];
@@ -149,6 +155,14 @@ static NSString *XAR_EXECUTABLE = @"/usr/bin/xar";
             [self installOrUpdateDocSetsForPods];
         }
     }];
+}
+
+- (void)updatePods {
+    [CCPShellHandler runShellCommand:@"/usr/bin/pod"
+                            withArgs:@[@"update"]
+                           directory:[CCPWorkspaceManager currentWorkspaceDirectoryPath]
+                          completion:^(NSTask *t) {
+						  }];
 }
 
 - (void)installCocoaPods {
